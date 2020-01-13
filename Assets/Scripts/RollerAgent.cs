@@ -5,7 +5,8 @@ using MLAgents;
 
 public class RollerAgent : Agent
 {
-    public Transform Target;
+    public Transform Target,enemy;
+    
     public float speed;
 
     Rigidbody rBody;
@@ -27,6 +28,7 @@ public class RollerAgent : Agent
 
         // Target 위치 초기화
         Target.position = new Vector3(Random.value * 8 - 4, 0.5f, Random.value * 8 - 4);
+        enemy.position = new Vector3(Random.value * 8 - 4, 0.5f, Random.value * 8 - 4);
     }
 
     public override void CollectObservations()
@@ -34,10 +36,14 @@ public class RollerAgent : Agent
         // Target과 Agent 위치 수집
         AddVectorObs(Target.position);
         AddVectorObs(this.transform.position);
+        AddVectorObs(enemy.position);
+
 
         // Agent의 Velocity 수집
         AddVectorObs(rBody.velocity.x);
         AddVectorObs(rBody.velocity.z);
+
+        
     }
 
     public override void AgentAction(float[] vectorAction)
@@ -48,13 +54,18 @@ public class RollerAgent : Agent
         rBody.AddForce(controlSignal * speed);
 
         float distanceToTarget = Vector3.Distance(this.transform.position, Target.position);
+        float distanceToEnemy = Vector3.Distance(this.transform.position, enemy.position);
 
         if (distanceToTarget < 1.42f)
         {
             SetReward(1.0f);
             Done();
         }
-
+        if (distanceToEnemy < 1.42f)
+        {
+            SetReward(-1.1f);
+            Done();
+        }
         if (this.transform.position.y < 0)
         {
             Done();
